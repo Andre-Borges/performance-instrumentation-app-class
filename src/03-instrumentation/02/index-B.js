@@ -1,3 +1,9 @@
+// set name application to differ apps in newrelic interface
+process.env.APP_NAME = 'index-B';
+
+// NEWCODE
+const log = require('./log');
+const newrelic = require('newrelic');
 const express = require('express');
 const got = require('got');
 const redis = require('redis');
@@ -55,10 +61,27 @@ async function requestWithCb() {
   return breaker.fire();
 }
 
-// add cache inteligence route to express
-app.get('/cache', async (req, res) => {
+//NEWCODE
+app.use((req, res, next) => {
+  const { params, body, query, method, url, headers } = req;
+  log.info({
+    req: {
+      method,
+      url,
+      headers: JSON.stringify(headers),
+      params: JSON.stringify(params),
+      query: JSON.stringify(query),
+      body: JSON.stringify(body),
+    },
+  });
+  next();
+});
+
+// add route to express
+app.get('/', async (req, res) => {
   try {
     const response = await requestWithCb();
+
     res.send(response);
   } catch (err) {
     res.status(500).send('Something broke!');

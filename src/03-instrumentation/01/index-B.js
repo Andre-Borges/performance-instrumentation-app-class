@@ -1,3 +1,7 @@
+// set name application to differ apps in newrelic interface
+process.env.APP_NAME = 'index-B';
+
+const newrelic = require('newrelic');
 const express = require('express');
 const got = require('got');
 const redis = require('redis');
@@ -55,10 +59,11 @@ async function requestWithCb() {
   return breaker.fire();
 }
 
-// add cache inteligence route to express
-app.get('/cache', async (req, res) => {
+// add route to express
+app.get('/', async (req, res) => {
   try {
     const response = await requestWithCb();
+
     res.send(response);
   } catch (err) {
     res.status(500).send('Something broke!');
