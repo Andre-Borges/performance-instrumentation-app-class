@@ -6,11 +6,6 @@ const CircuitBreaker = require('opossum');
 const app = express();
 const port = process.env.PORT || 3001;
 
-const client = redis.createClient({ host: '127.0.0.1', port: 6379 });
-const redisSetPromise = util.promisify(client.set).bind(client);
-const redisGetPromise = util.promisify(client.get).bind(client);
-const REDISCACHEKEY = 'get-api';
-
 const circuitBreakerOptions = {
   timeout: 5000,
   errorThresholdPercentage: 10,
@@ -22,6 +17,11 @@ breaker.on('open', () => console.log(`OPEN: The breaker`));
 breaker.on('halfOpen', () => console.log(`HALF_OPEN: The breaker`));
 breaker.on('close', () => console.log(`CLOSE: The breaker`));
 breaker.fallback(requestFallbackRedis);
+
+const client = redis.createClient({ host: '127.0.0.1', port: 6379 });
+const redisSetPromise = util.promisify(client.set).bind(client);
+const redisGetPromise = util.promisify(client.get).bind(client);
+const REDISCACHEKEY = 'get-api';
 
 async function requestFallbackRedis() {
   let response = 'OK fallback';
